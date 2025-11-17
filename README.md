@@ -5,9 +5,9 @@ Backend untuk proyek Capstone **LearnCheck**, sebuah sistem yang menghasilkan so
 ## ✨ Fitur Utama
 - Endpoint tunggal: `GET /api/generate`
 - Mengambil data tutorial dari Mock Dicoding API
-- Mengambil preferensi user dari Mock Dicoding API (dengan fallback jika tidak tersedia)
+- Mengambil preferensi user dari Mock Dicoding API
 - Mengolah materi (HTML → text)
-- Mengirim materi ke LLM (saat ini masih mock; siap diintegrasikan ke provider)
+- Mengirim materi ke LLM (sekarang masih sekedar mock)
 - Validasi schema soal dengan Joi
 - In-memory caching untuk menghindari repeated processing
 - Error handling & fallback agar API tetap stabil

@@ -1,0 +1,31 @@
+{
+  "name": "learncheck-be",
+  "version": "1.0.0",
+  "description": "Repo ini berisi source code Learncheck di sisi Backend.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon --watch src --exec node src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReySa18/learncheck-be.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ReySa18/learncheck-be/issues"
+  },
+  "homepage": "https://github.com/ReySa18/learncheck-be#readme",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "joi": "^18.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}

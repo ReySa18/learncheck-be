@@ -46,56 +46,91 @@ function fallbackQuestions() {
 	];
 }
 
+//GEMINI INTEGRATION
+async function callGemini(prompt) {
+	const url = `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+	const body = {
+		contents: [
+			{
+				role: "user",
+				parts: [{ text: prompt }],
+			},
+		],
+	};
+
+	const response = await axios.post(url, body);
+
+	return (
+		response.data?.candidates?.[0]?.content?.parts?.[0]?.text || ""
+	);
+}
+
 module.exports = {
 	async generateQuestionsFromContent(htmlContent) {
 		const key = `q_${(htmlContent || '').slice(0, 1000)}`;
 		const cached = getCache(key);
 		if (cached) return cached;
 
+        // Convert materi jadi teks bersih
 		const text = stripHtmlToText(htmlContent || '');
 
-		// TODO: ganti ini dengan panggilan LLM beneran nanti
-		const mockResult = fallbackQuestions();
+		// Build Prompt
+		const prompt = `
+Anda adalah generator soal untuk aplikasi LearnCheck.
+Tugas Anda: membuat 3 soal multiple-choice (pilihan ganda) berdasarkan materi berikut.
 
-		// buat validasi hasil mock
-		const { error, value } = validateQuestions(mockResult);
-		if (!error) {
-			setCache(key, value);
-			return value;
-		}
+Persyaratan format output (WAJIB):
+- Format output berupa JSON array.
+- Setiap elemen memiliki struktur:
+  {
+    "id": "q1 atau q2 atau q3",
+    "question": "teks pertanyaan",
+    "choices": ["A", "B", "C", "D"],
+    "correct_index": 0-3,
+    "hint": "petunjuk singkat"
+  }
+- Tidak boleh mengembalikan teks lain di luar JSON.
+- Semua pilihan harus relevan.
+- Soal harus berdasarkan materi di bawah.
+- Hint tidak boleh membocorkan jawaban.
 
-		console.warn('LLM mock returned invalid question shape:', error.details.map(d => d.message));
-		const fb = fallbackQuestions();
-		setCache(key, fb);
-		return fb;
-
-		/* ---------- Contoh buat panggil LLM beneran
-		// build prompt
-		const prompt = `Buat 3 soal multiple-choice (4 pilihan) berdasarkan materi berikut. Output JSON array: [{id, question, choices, correct_index, hint}]. Materi:\n\n${text}`;
+Materi:
+${text}
+		`;
 
 		try {
-			const resp = await axios.post(process.env.LLM_URL, { prompt }, {
-				headers: { 'Authorization': `Bearer ${process.env.LLM_API_KEY}` },
-				timeout: 15000
-			});
-			// assume resp.data.questions OR resp.data (string JSON)
-			let questions = resp.data && resp.data.questions ? resp.data.questions : resp.data;
-			// if string, try parse
-			if (typeof questions === 'string') {
-				try { questions = JSON.parse(questions); } catch (e) { // ignore parse error
-				}
+			// ================================
+			// 2. Call Gemini
+			// ================================
+			let raw = await callGemini(prompt);
+
+			// Bersihkan block code kalau ada
+			raw = raw.replace(/```json|```/g, "").trim();
+
+			let parsed;
+			try {
+				parsed = JSON.parse(raw);
+			} catch (err) {
+				console.warn("Gagal parse JSON dari Gemini. Raw:", raw);
+				return fallbackQuestions();
 			}
-			const { error, value } = validateQuestions(questions || []);
+
+			// ================================
+			// 3. Validasi dengan Joi
+			// ================================
+			const { error, value } = validateQuestions(parsed);
 			if (!error) {
 				setCache(key, value);
 				return value;
 			}
-			console.warn('LLM returned invalid shape:', error.details.map(d => d.message));
+
+			console.warn("Shape LLM invalid:", error.details);
 			return fallbackQuestions();
-		} catch (e) {
-			console.warn('LLM provider error:', e.message);
+
+		} catch (err) {
+			console.warn("Error call Gemini:", err.message);
 			return fallbackQuestions();
 		}
-		*/
 	}
 };

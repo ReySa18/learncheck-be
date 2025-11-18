@@ -46,25 +46,31 @@ function fallbackQuestions() {
 	];
 }
 
-//GEMINI INTEGRATION
-async function callGemini(prompt) {
-	const url = `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+//LLM INTEGRATION
+async function callLLM(prompt) {
+  const url = `${process.env.LLM_URL}/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`;
 
-	const body = {
-		contents: [
-			{
-				role: "user",
-				parts: [{ text: prompt }],
-			},
-		],
-	};
+  const body = {
+    contents: [
+      {
+        parts: [
+          { text: prompt }
+        ]
+      }
+    ]
+  };
 
-	const response = await axios.post(url, body);
+  const response = await axios.post(url, body, {
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
 
-	return (
-		response.data?.candidates?.[0]?.content?.parts?.[0]?.text || ""
-	);
+  const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+  return output;
 }
+
 
 module.exports = {
 	async generateQuestionsFromContent(htmlContent) {
@@ -78,7 +84,7 @@ module.exports = {
 		// Build Prompt
 		const prompt = `
 Anda adalah generator soal untuk aplikasi LearnCheck.
-Tugas Anda: membuat 3 soal multiple-choice (pilihan ganda) berdasarkan materi berikut.
+Tugas Anda: membuat 3-5 (sesuaikan berdasarkan tingkat kesulitan dan banyaknya keypoint materi) soal multiple-choice (pilihan ganda) berdasarkan materi berikut.
 
 Persyaratan format output (WAJIB):
 - Format output berupa JSON array.
@@ -100,10 +106,8 @@ ${text}
 		`;
 
 		try {
-			// ================================
 			// 2. Call Gemini
-			// ================================
-			let raw = await callGemini(prompt);
+			let raw = await callLLM(prompt);
 
 			// Bersihkan block code kalau ada
 			raw = raw.replace(/```json|```/g, "").trim();
@@ -116,9 +120,7 @@ ${text}
 				return fallbackQuestions();
 			}
 
-			// ================================
 			// 3. Validasi dengan Joi
-			// ================================
 			const { error, value } = validateQuestions(parsed);
 			if (!error) {
 				setCache(key, value);

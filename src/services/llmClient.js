@@ -48,7 +48,7 @@ function fallbackQuestions() {
 
 //GEMINI INTEGRATION
 async function callGemini(prompt) {
-	const url = `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+	const url = `https://generativelanguage.googleapis.com/v1beta/models/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`;
 
 	const body = {
 		contents: [

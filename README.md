@@ -33,6 +33,7 @@ PORT=3000
 MOCK_BASE_URL=https://learncheck-dicoding-mock-666748076441.europe-west1.run.app/api
 LLM_URL=https://example-llm.local/generate
 LLM_API_KEY=changeme
+LLM_MODEL=llmodel
 CACHE_TTL=600
 ```
 
@@ -54,5 +55,6 @@ npm start
 | `MOCK_BASE_URL` | URL Mock Dicoding          |
 | `LLM_URL`       | Endpoint provider LLM      |
 | `LLM_API_KEY`   | API key untuk LLM          |
+| `LLM_MODEL`     | Model LLM                  |
 | `CACHE_TTL`     | Cache time-to-live (detik) |
 

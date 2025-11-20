@@ -20,32 +20,6 @@ function getCache(key) {
 	return item.value;
 }
 
-function fallbackQuestions() {
-	return [
-		{
-			id: 'q1',
-			question: 'Contoh: Apa topik utama materi di atas?',
-			choices: ['Pilihan A','Pilihan B','Pilihan C','Pilihan D'],
-			correct_index: 0,
-			hint: 'Perhatikan paragraf pertama'
-		},
-		{
-			id: 'q2',
-			question: 'Contoh: Mana yang bukan termasuk?',
-			choices: ['A','B','C','D'],
-			correct_index: 2,
-			hint: 'Telusuri definisi'
-		},
-		{
-			id: 'q3',
-			question: 'Contoh: Fungsi dari X adalah?',
-			choices: ['1','2','3','4'],
-			correct_index: 1,
-			hint: 'Lihat bagian akhir'
-		}
-	];
-}
-
 // CHUNKING
 function chunkText(text, size = 10000) {
   const chunks = [];
@@ -172,7 +146,7 @@ ${summarizedText}
         parsed = JSON.parse(raw);
       } catch (err) {
         console.warn("Gagal parse JSON dari Gemini. Raw:", raw);
-        return fallbackQuestions();
+        throw new Error("LLM menghasilkan output tidak valid (JSON parsing gagal).");
       }
 
       const { error, value } = validateQuestions(parsed);
@@ -183,11 +157,11 @@ ${summarizedText}
       }
 
       console.warn("Invalid LLM shape:", error.details);
-      return fallbackQuestions();
+      throw new Error("LLM menghasilkan struktur soal yang tidak valid.");
 
     } catch (err) {
       console.warn("Error call Gemini:", err.message);
-      return fallbackQuestions();
+      throw new Error("Gagal menghasilkan soal dari LLM: " + err.message);
     }
   }
 };

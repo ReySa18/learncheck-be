@@ -143,7 +143,7 @@ module.exports = {
 
     const prompt = `
 Anda adalah generator soal untuk aplikasi LearnCheck.
-Tugas: Buat 3–5 soal multiple-choice berdasarkan ringkasan materi berikut.
+Tugas: Buat 3 - 5 soal (berdasarkan tingkat kesulitan materi) multiple-choice berdasarkan ringkasan materi berikut.
 
 FORMAT OUTPUT WAJIB:
 Hanya JSON array:

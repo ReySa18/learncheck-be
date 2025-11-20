@@ -21,6 +21,7 @@
   "homepage": "https://github.com/ReySa18/learncheck-be#readme",
   "dependencies": {
     "axios": "^1.13.2",
+    "axios-retry": "^4.5.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",

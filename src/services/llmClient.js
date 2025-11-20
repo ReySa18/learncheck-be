@@ -1,10 +1,25 @@
 const axios = require('axios');
+const axiosRetry = require('axios-retry').default;
 const { stripHtmlToText } = require('../utils/promptTemplates');
 const { validateQuestions } = require('../validators/questionsValidator');
 const ApiError = require('../utils/ApiError');
 
 const cache = new Map();
 const CACHE_TTL = parseInt(process.env.CACHE_TTL || '600', 10);
+
+const llmClient = axios.create({
+  timeout: 30000, // 30 detik timeout
+  headers: { 'Content-Type': 'application/json' },
+});
+
+axiosRetry(llmClient, {
+  retries: 2, // Buat coba ulangi 2 kali
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (error) => {
+    // Ulangi ketika masalah jaringan, 429 (Too Many Requests), atau status kode 5xx
+    return axiosRetry.isNetworkOrIdempotentRequestError(error) || (error.response && (error.response.status === 429 || error.response.status >= 500));
+  },
+});
 
 function setCache(key, value) {
   const expireAt = Date.now() + CACHE_TTL * 1000;
@@ -29,8 +44,8 @@ function chunkText(text, size = 12000) {
   return chunks;
 }
 
-//LLM INTEGRATION
-async function callLLM(prompt, retries = 3) {
+// LLM INTEGRATION
+async function callLLM(prompt) {
   // Gunakan header x-goog-api-key untuk auth
   const url = `${process.env.LLM_URL}/${process.env.LLM_MODEL}:generateContent`;
 
@@ -39,27 +54,15 @@ async function callLLM(prompt, retries = 3) {
   };
 
   try {
-    const response = await axios.post(url, body, {
+    const response = await llmClient.post(url, body, {
       headers: {
-        'Content-Type': 'application/json',
         'x-goog-api-key': process.env.LLM_API_KEY,
       },
-      timeout: 30000,
     });
 
     const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     return output;
   } catch (err) {
-    const status = err.response?.status;
-
-    // Retry pada 429 (Too Many Requests) atau 5xx (Server Errors)
-    if ((status === 429 || status >= 500) && retries > 0) {
-      const delay = (4 - retries) * 2000;
-      console.warn(`Gemini error ${status}. Retry in ${delay}ms...`);
-      await new Promise((res) => setTimeout(res, delay));
-      return callLLM(prompt, retries - 1);
-    }
-
     throw err;
   }
 }
@@ -143,7 +146,7 @@ ${summarizedText}
     try {
       let raw = await callLLM(prompt);
 
-      // Parsing defensif: strip code fences dan cari array JSON
+      // Parse dan bersihkan output LLM
       let clean = raw
         .replace(/```json/gi, '')
         .replace(/```/g, '')

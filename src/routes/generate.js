@@ -3,45 +3,29 @@ const router = express.Router();
 const dicoding = require('../services/dicodingClient');
 const llm = require('../services/llmClient');
 const { validateGenerateQuery } = require('../validators/generateValidator');
+const ApiError = require('../utils/ApiError');
 
-router.get('/generate', async (req, res) => {
-  try {
-    const { error, value } = validateGenerateQuery(req.query);
-    if (error) {
-      return res.status(400).json({ status: 'error', message: error.details[0].message });
-    }
-    const { tutorial_id, user_id } = value;
+router.get('/generate', async (req, res, next) => {
+	try {
+		if (req.query.tutorial_id && typeof req.query.tutorial_id === 'string') req.query.tutorial_id = req.query.tutorial_id.trim();
+		if (req.query.user_id && typeof req.query.user_id === 'string') req.query.user_id = req.query.user_id.trim();
 
-    // 1. ambil materi dari mock dicoding
-    const tutorial = await dicoding.getTutorialContent(tutorial_id);
+		const { error, value } = validateGenerateQuery(req.query);
+		if (error) return next(new ApiError(400, error.details[0].message));
 
-    // 2. ambil preference user
-    const pref = await dicoding.getUserPreference(user_id);
+		const { tutorial_id, user_id } = value;
 
-    // 3. panggil LLM untuk generate soal
-    const questions = await llm.generateQuestionsFromContent(tutorial.content);
+		const tutorial = await dicoding.getTutorialContent(tutorial_id);
+		const pref = await dicoding.getUserPreference(user_id);
+		const questions = await llm.generateQuestionsFromContent(tutorial.content);
 
-    // 4. format response
-    return res.json({
-      status: 'success',
-      data: {
-        tutorial_id,
-        user_id,
-        preferences: pref.preference || {},
-        questions,
-      },
-    });
-  } catch (err) {
-    console.error('=== ERROR in /api/generate ===');
-    console.error('err.message =', err && err.message);
-    if (err.response) {
-      console.error('err.response.status =', err.response.status);
-      console.error('err.response.data =', JSON.stringify(err.response.data, null, 2));
-    }
-    if (err.stack) console.error(err.stack);
-
-    return res.status(500).json({ status: 'error', message: 'internal server error', debug: err.message });
-  }
+		return res.json({
+			status: 'success',
+			data: { tutorial_id, user_id, preferences: pref.preference || {}, questions }
+		});
+	} catch (err) {
+		return next(err);
+	}
 });
 
 module.exports = router;

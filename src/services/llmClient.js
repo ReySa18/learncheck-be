@@ -1,23 +1,24 @@
 const axios = require('axios');
 const { stripHtmlToText } = require('../utils/promptTemplates');
 const { validateQuestions } = require('../validators/questionsValidator');
+const ApiError = require('../utils/ApiError');
 
 const cache = new Map();
 const CACHE_TTL = parseInt(process.env.CACHE_TTL || '600', 10);
 
 function setCache(key, value) {
-	const expireAt = Date.now() + CACHE_TTL * 1000;
-	cache.set(key, { value, expireAt });
+  const expireAt = Date.now() + CACHE_TTL * 1000;
+  cache.set(key, { value, expireAt });
 }
 
 function getCache(key) {
-	const item = cache.get(key);
-	if (!item) return null;
-	if (Date.now() > item.expireAt) {
-		cache.delete(key);
-		return null;
-	}
-	return item.value;
+  const item = cache.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expireAt) {
+    cache.delete(key);
+    return null;
+  }
+  return item.value;
 }
 
 function chunkText(text, size = 12000) {
@@ -33,32 +34,31 @@ async function callLLM(prompt, retries = 3) {
   const url = `${process.env.LLM_URL}/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`;
 
   const body = {
-    contents: [{ parts: [{ text: prompt }] }]
+    contents: [{ parts: [{ text: prompt }] }],
   };
 
   try {
     const response = await axios.post(url, body, {
-      headers: { "Content-Type": "application/json" },
-      timeout: 30000
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000,
     });
 
-    const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     return output;
-
   } catch (err) {
     const status = err.response?.status;
 
     if ((status === 429 || status === 503) && retries > 0) {
-      const delay = (4 - retries) * 2000; 
+      const delay = (4 - retries) * 2000;
       console.warn(`Gemini error ${status}. Retry in ${delay}ms...`);
-      await new Promise(res => setTimeout(res, delay));
+      await new Promise((res) => setTimeout(res, delay));
       return callLLM(prompt, retries - 1);
     }
 
     throw err;
   }
 }
-// SUMMARIZATION 
+// SUMMARIZATION
 async function summarizeLongText(rawText) {
   const chunks = chunkText(rawText);
   const summaries = [];
@@ -86,23 +86,22 @@ ${chunk}
       const summary = await callLLM(prompt);
       const clean = summary.trim();
 
-      console.log("CHUNK SUMMARY LEN:", clean.length);
+      console.log('CHUNK SUMMARY LEN:', clean.length);
 
       if (clean.length < 20) {
-        console.warn("Summary too short → using fallback minimal summary.");
-        summaries.push("- Materi mencakup konsep penting yang perlu dipahami.");
+        console.warn('Summary too short → using fallback minimal summary.');
+        summaries.push('- Materi mencakup konsep penting yang perlu dipahami.');
       } else {
         summaries.push(clean);
       }
     } catch (err) {
-      console.warn("Summarization failed for a chunk:", err.message);
-      summaries.push("- Materi mencakup konsep utama.");
+      console.warn('Summarization failed for a chunk:', err.message);
+      summaries.push('- Materi mencakup konsep utama.');
     }
   }
 
-  return summaries.join("\n");
+  return summaries.join('\n');
 }
-
 
 module.exports = {
   async generateQuestionsFromContent(htmlContent) {
@@ -138,14 +137,14 @@ ${summarizedText}
 
     try {
       let raw = await callLLM(prompt);
-      raw = raw.replace(/```json|```/g, "").trim();
+      raw = raw.replace(/```json|```/g, '').trim();
 
       let parsed;
       try {
         parsed = JSON.parse(raw);
       } catch (err) {
-        console.warn("Gagal parse JSON dari Gemini. Raw:", raw);
-        throw new Error("LLM menghasilkan output tidak valid (JSON parsing gagal).");
+        console.warn('Gagal parse JSON dari Gemini. Raw:', raw);
+        throw new Error('LLM menghasilkan output tidak valid (JSON parsing gagal).');
       }
 
       const { error, value } = validateQuestions(parsed);
@@ -155,12 +154,12 @@ ${summarizedText}
         return value;
       }
 
-      console.warn("Invalid LLM shape:", error.details);
-      throw new Error("LLM menghasilkan struktur soal yang tidak valid.");
-
+      console.warn('Invalid LLM shape:', error.details);
+      throw new ApiError(502, 'LLM menghasilkan struktur soal yang tidak valid.');
     } catch (err) {
-      console.warn("Error call Gemini:", err.message);
-      throw new Error("Gagal menghasilkan soal dari LLM: " + err.message);
+      console.warn('Error call Gemini:', err.message);
+      if (err instanceof ApiError) throw err;
+      throw new ApiError(502, 'Gagal menghasilkan soal dari LLM: ' + err.message);
     }
-  }
+  },
 };

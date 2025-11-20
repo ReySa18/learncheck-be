@@ -1,16 +1,16 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const generateRouter = require('./routes/generate');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const generateRouter = require('./routes/generate');
 
 dotenv.config();
 
 const app = express();
-app.use(express.json());
 
+app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors());
 app.use(helmet());
@@ -24,6 +24,9 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api', generateRouter);
+
+const errorHandler = require('./middleware/errorHandler');
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

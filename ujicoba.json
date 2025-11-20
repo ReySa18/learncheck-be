@@ -1,0 +1,14 @@
+{
+  "id": "learncheck-local-env",
+  "name": "LearnCheck Local",
+  "values": [
+    { "key": "BASE_URL", "value": "http://localhost:3000", "enabled": true },
+    { "key": "MOCK_BASE_URL", "value": "https://learncheck-dicoding-mock-666748076441.europe-west1.run.app/api", "enabled": true },
+    { "key": "LLM_URL", "value": "https://example-llm.local/generate", "enabled": true },
+    { "key": "LLM_API_KEY", "value": "changeme", "enabled": true },
+    { "key": "LLM_MODEL", "value": "llmodel", "enabled": true },
+    { "key": "USER_ID", "value": "123", "enabled": true },
+    { "key": "TUTORIAL_ID", "value": "35363", "enabled": true }
+  ],
+  "_postman_variable_scope": "environment"
+}

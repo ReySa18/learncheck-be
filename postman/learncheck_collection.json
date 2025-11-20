@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "LearnCheck API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Generate Questions (Success)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/generate?tutorial_id=35363&user_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "generate"],
+          "query": [
+            {
+              "key": "tutorial_id",
+              "value": "35363"
+            },
+            {
+              "key": "user_id",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Questions (User Not Found)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/generate?tutorial_id=35363&user_id=123",
+          "host": ["{{base_url}}"],
+          "path": ["api", "generate"],
+          "query": [
+            {
+              "key": "tutorial_id",
+              "value": "35363"
+            },
+            {
+              "key": "user_id",
+              "value": "123"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Questions (Missing Param)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/generate?tutorial_id=35363",
+          "host": ["{{base_url}}"],
+          "path": ["api", "generate"],
+          "query": [
+            {
+              "key": "tutorial_id",
+              "value": "35363"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Questions (Tutorial Not Found)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/generate?tutorial_id=999999&user_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "generate"],
+          "query": [
+            {
+              "key": "tutorial_id",
+              "value": "999999"
+            },
+            {
+              "key": "user_id",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Questions (LLM Failure)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/generate?tutorial_id=35363&user_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "generate"],
+          "query": [
+            {
+              "key": "tutorial_id",
+              "value": "35363"
+            },
+            {
+              "key": "user_id",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Request ini untuk simulasi jika LLM gagal (misal API Key salah atau koneksi putus). Akan return 502."
+      },
+      "response": []
+    }
+  ]
+}

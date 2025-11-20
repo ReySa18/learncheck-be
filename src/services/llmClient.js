@@ -6,44 +6,44 @@ const cache = new Map();
 const CACHE_TTL = parseInt(process.env.CACHE_TTL || '600', 10);
 
 function setCache(key, value) {
-	const expireAt = Date.now() + CACHE_TTL * 1000;
-	cache.set(key, { value, expireAt });
+  const expireAt = Date.now() + CACHE_TTL * 1000;
+  cache.set(key, { value, expireAt });
 }
 
 function getCache(key) {
-	const item = cache.get(key);
-	if (!item) return null;
-	if (Date.now() > item.expireAt) {
-		cache.delete(key);
-		return null;
-	}
-	return item.value;
+  const item = cache.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expireAt) {
+    cache.delete(key);
+    return null;
+  }
+  return item.value;
 }
 
 function fallbackQuestions() {
-	return [
-		{
-			id: 'q1',
-			question: 'Contoh: Apa topik utama materi di atas?',
-			choices: ['Pilihan A','Pilihan B','Pilihan C','Pilihan D'],
-			correct_index: 0,
-			hint: 'Perhatikan paragraf pertama'
-		},
-		{
-			id: 'q2',
-			question: 'Contoh: Mana yang bukan termasuk?',
-			choices: ['A','B','C','D'],
-			correct_index: 2,
-			hint: 'Telusuri definisi'
-		},
-		{
-			id: 'q3',
-			question: 'Contoh: Fungsi dari X adalah?',
-			choices: ['1','2','3','4'],
-			correct_index: 1,
-			hint: 'Lihat bagian akhir'
-		}
-	];
+  return [
+    {
+      id: 'q1',
+      question: 'Contoh: Apa topik utama materi di atas?',
+      choices: ['Pilihan A', 'Pilihan B', 'Pilihan C', 'Pilihan D'],
+      correct_index: 0,
+      hint: 'Perhatikan paragraf pertama',
+    },
+    {
+      id: 'q2',
+      question: 'Contoh: Mana yang bukan termasuk?',
+      choices: ['A', 'B', 'C', 'D'],
+      correct_index: 2,
+      hint: 'Telusuri definisi',
+    },
+    {
+      id: 'q3',
+      question: 'Contoh: Fungsi dari X adalah?',
+      choices: ['1', '2', '3', '4'],
+      correct_index: 1,
+      hint: 'Lihat bagian akhir',
+    },
+  ];
 }
 
 //LLM INTEGRATION
@@ -53,36 +53,33 @@ async function callLLM(prompt) {
   const body = {
     contents: [
       {
-        parts: [
-          { text: prompt }
-        ]
-      }
-    ]
+        parts: [{ text: prompt }],
+      },
+    ],
   };
 
   const response = await axios.post(url, body, {
     headers: {
-      "Content-Type": "application/json"
-    }
+      'Content-Type': 'application/json',
+    },
   });
 
-  const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
   return output;
 }
 
-
 module.exports = {
-	async generateQuestionsFromContent(htmlContent) {
-		const key = `q_${(htmlContent || '').slice(0, 1000)}`;
-		const cached = getCache(key);
-		if (cached) return cached;
+  async generateQuestionsFromContent(htmlContent) {
+    const key = `q_${(htmlContent || '').slice(0, 1000)}`;
+    const cached = getCache(key);
+    if (cached) return cached;
 
-        // Convert materi jadi teks bersih
-		const text = stripHtmlToText(htmlContent || '');
+    // Convert materi jadi teks bersih
+    const text = stripHtmlToText(htmlContent || '');
 
-		// Build Prompt
-		const prompt = `
+    // Build Prompt
+    const prompt = `
 Anda adalah generator soal untuk aplikasi LearnCheck.
 Tugas Anda: membuat 3-5 (sesuaikan berdasarkan tingkat kesulitan dan banyaknya keypoint materi) soal multiple-choice (pilihan ganda) berdasarkan materi berikut.
 
@@ -105,34 +102,33 @@ Materi:
 ${text}
 		`;
 
-		try {
-			// 2. Call Gemini
-			let raw = await callLLM(prompt);
+    try {
+      // 2. Call Gemini
+      let raw = await callLLM(prompt);
 
-			// Bersihkan block code kalau ada
-			raw = raw.replace(/```json|```/g, "").trim();
+      // Bersihkan block code kalau ada
+      raw = raw.replace(/```json|```/g, '').trim();
 
-			let parsed;
-			try {
-				parsed = JSON.parse(raw);
-			} catch (err) {
-				console.warn("Gagal parse JSON dari Gemini. Raw:", raw);
-				return fallbackQuestions();
-			}
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch (err) {
+        console.warn('Gagal parse JSON dari Gemini. Raw:', raw);
+        return fallbackQuestions();
+      }
 
-			// 3. Validasi dengan Joi
-			const { error, value } = validateQuestions(parsed);
-			if (!error) {
-				setCache(key, value);
-				return value;
-			}
+      // 3. Validasi dengan Joi
+      const { error, value } = validateQuestions(parsed);
+      if (!error) {
+        setCache(key, value);
+        return value;
+      }
 
-			console.warn("Shape LLM invalid:", error.details);
-			return fallbackQuestions();
-
-		} catch (err) {
-			console.warn("Error call Gemini:", err.message);
-			return fallbackQuestions();
-		}
-	}
+      console.warn('Shape LLM invalid:', error.details);
+      return fallbackQuestions();
+    } catch (err) {
+      console.warn('Error call Gemini:', err.message);
+      return fallbackQuestions();
+    }
+  },
 };

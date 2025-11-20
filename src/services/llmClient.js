@@ -21,7 +21,7 @@ function getCache(key) {
 }
 
 // CHUNKING
-function chunkText(text, size = 15000) {
+function chunkText(text, size = 12000) {
   const chunks = [];
   for (let i = 0; i < text.length; i += size) {
     chunks.push(text.slice(i, i + size));

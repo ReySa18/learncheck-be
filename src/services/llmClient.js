@@ -31,7 +31,8 @@ function chunkText(text, size = 12000) {
 
 //LLM INTEGRATION
 async function callLLM(prompt, retries = 3) {
-  const url = `${process.env.LLM_URL}/${process.env.LLM_MODEL}:generateContent?key=${process.env.LLM_API_KEY}`;
+  // Gunakan header x-goog-api-key untuk auth
+  const url = `${process.env.LLM_URL}/${process.env.LLM_MODEL}:generateContent`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -39,7 +40,10 @@ async function callLLM(prompt, retries = 3) {
 
   try {
     const response = await axios.post(url, body, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': process.env.LLM_API_KEY,
+      },
       timeout: 30000,
     });
 
@@ -48,7 +52,8 @@ async function callLLM(prompt, retries = 3) {
   } catch (err) {
     const status = err.response?.status;
 
-    if ((status === 429 || status === 503) && retries > 0) {
+    // Retry pada 429 (Too Many Requests) atau 5xx (Server Errors)
+    if ((status === 429 || status >= 500) && retries > 0) {
       const delay = (4 - retries) * 2000;
       console.warn(`Gemini error ${status}. Retry in ${delay}ms...`);
       await new Promise((res) => setTimeout(res, delay));
@@ -137,11 +142,22 @@ ${summarizedText}
 
     try {
       let raw = await callLLM(prompt);
-      raw = raw.replace(/```json|```/g, '').trim();
+
+      // Parsing defensif: strip code fences dan cari array JSON
+      let clean = raw
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+      const firstBracket = clean.indexOf('[');
+      const lastBracket = clean.lastIndexOf(']');
+
+      if (firstBracket !== -1 && lastBracket !== -1) {
+        clean = clean.substring(firstBracket, lastBracket + 1);
+      }
 
       let parsed;
       try {
-        parsed = JSON.parse(raw);
+        parsed = JSON.parse(clean);
       } catch (err) {
         console.warn('Gagal parse JSON dari Gemini. Raw:', raw);
         throw new Error('LLM menghasilkan output tidak valid (JSON parsing gagal).');

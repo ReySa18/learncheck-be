@@ -1,0 +1,54 @@
+{
+  "timestamp": "2025-11-21T04:48:23.534Z",
+  "tutorial_id": "35373",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Apa tujuan utama dari Artificial Intelligence (AI) seperti yang dijelaskan dalam materi?",
+      "choices": [
+        "Menganalisis data besar untuk membuat laporan",
+        "Menghasilkan konten baru secara otomatis berdasarkan input pengguna",
+        "Meniru perilaku manusia agar komputer dapat mempelajari dan menyelesaikan tugas-tugas kompleks",
+        "Membangun algoritma untuk prediksi berbasis statistik"
+      ],
+      "correct_index": 2,
+      "hint": "Fokus pada definisi inti AI dan apa yang ingin dicapainya."
+    },
+    {
+      "id": "q2",
+      "question": "Pernyataan mana yang paling tepat menggambarkan hubungan antara Artificial Intelligence (AI), Machine Learning (ML), dan Deep Learning (DL)?",
+      "choices": [
+        "AI adalah bagian dari ML, dan ML adalah bagian dari DL.",
+        "ML adalah bagian dari AI, dan DL adalah bagian dari ML.",
+        "DL adalah bagian dari AI, dan ML adalah bagian dari DL.",
+        "AI, ML, dan DL adalah tiga teknologi yang sepenuhnya terpisah dan tidak saling berhubungan."
+      ],
+      "correct_index": 1,
+      "hint": "Pikirkan mereka sebagai konsep yang berlapis atau bersarang satu sama lain."
+    },
+    {
+      "id": "q3",
+      "question": "Apa dasar utama yang digunakan Deep Learning (DL) untuk memproses masalah yang lebih kompleks, seperti yang disebutkan dalam materi?",
+      "choices": [
+        "Metode statistika sederhana",
+        "Analisis data besar secara langsung",
+        "Jaringan saraf tiruan",
+        "Input pengguna secara manual"
+      ],
+      "correct_index": 2,
+      "hint": "Deep Learning memiliki struktur khusus yang terinspirasi dari biologi."
+    },
+    {
+      "id": "q4",
+      "question": "Kemampuan spesifik apakah yang dimiliki oleh Generative AI?",
+      "choices": [
+        "Hanya menganalisis data yang sudah ada untuk menemukan pola tersembunyi.",
+        "Memungkinkan komputer belajar dan berkembang secara otomatis dari pengalaman.",
+        "Menghasilkan berbagai konten baru, seperti bahasa, kode, suara, atau gambar.",
+        "Memproses masalah yang sangat kompleks melalui input, hidden layer, dan output saja."
+      ],
+      "correct_index": 2,
+      "hint": "Kata 'Generative' mengacu pada tindakan menciptakan atau menghasilkan."
+    }
+  ]
+}

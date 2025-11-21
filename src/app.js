@@ -16,13 +16,15 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(cors());
 app.use(helmet());
-app.use(rateLimit({
-	windowMs: 60 * 1000,
-	max: 60
-}));
+app.use(
+  rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+  })
+);
 
 app.get('/health', (req, res) => {
-	return res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' });
+  return res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' });
 });
 
 app.use('/api', generateRouter);
@@ -32,5 +34,5 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-	console.log(`LearnCheck BackEnd running on :${PORT}`);
+  console.log(`LearnCheck BackEnd running on :${PORT}`);
 });

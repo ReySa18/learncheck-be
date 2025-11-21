@@ -1,3 +1,4 @@
 .env
 .github/
 node_modules/
+debug_samples/

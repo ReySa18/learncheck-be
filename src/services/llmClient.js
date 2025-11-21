@@ -17,7 +17,10 @@ axiosRetry(llmClient, {
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
     // Ulangi ketika masalah jaringan, 429 (Too Many Requests), atau status kode 5xx
-    return axiosRetry.isNetworkOrIdempotentRequestError(error) || (error.response && (error.response.status === 429 || error.response.status >= 500));
+    return (
+      axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+      (error.response && (error.response.status === 429 || error.response.status >= 500))
+    );
   },
 });
 
@@ -53,18 +56,14 @@ async function callLLM(prompt) {
     contents: [{ parts: [{ text: prompt }] }],
   };
 
-  try {
-    const response = await llmClient.post(url, body, {
-      headers: {
-        'x-goog-api-key': process.env.LLM_API_KEY,
-      },
-    });
+  const response = await llmClient.post(url, body, {
+    headers: {
+      'x-goog-api-key': process.env.LLM_API_KEY,
+    },
+  });
 
-    const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    return output;
-  } catch (err) {
-    throw err;
-  }
+  const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return output;
 }
 // SUMMARIZATION
 async function summarizeLongText(rawText) {
@@ -102,8 +101,8 @@ ${chunk}
       } else {
         summaries.push(clean);
       }
-    } catch (err) {
-      console.warn('Summarization failed for a chunk:', err.message);
+    } catch (_err) {
+      console.warn('Summarization failed for a chunk:', _err.message);
       summaries.push('- Materi mencakup konsep utama.');
     }
   }
@@ -161,7 +160,7 @@ ${summarizedText}
       let parsed;
       try {
         parsed = JSON.parse(clean);
-      } catch (err) {
+      } catch (_err) {
         console.warn('Gagal parse JSON dari Gemini. Raw:', raw);
         throw new Error('LLM menghasilkan output tidak valid (JSON parsing gagal).');
       }

@@ -2,7 +2,9 @@ const axios = require('axios');
 const axiosRetry = require('axios-retry').default;
 const ApiError = require('../utils/ApiError');
 
-const MOCK_BASE = process.env.MOCK_BASE_URL || 'https://learncheck-dicoding-mock-666748076441.europe-west1.run.app/api';
+const MOCK_BASE =
+  process.env.MOCK_BASE_URL ||
+  'https://learncheck-dicoding-mock-666748076441.europe-west1.run.app/api';
 const DEFAULT_TIMEOUT = 8000;
 
 const client = axios.create({
@@ -16,7 +18,10 @@ axiosRetry(client, {
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) => {
     // Ulangi saat ada masalah pada jaringan
-    return axiosRetry.isNetworkOrIdempotentRequestError(error) || (error.response && error.response.status >= 500);
+    return (
+      axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+      (error.response && error.response.status >= 500)
+    );
   },
 });
 
@@ -27,35 +32,11 @@ async function safeGet(endpoint) {
   } catch (err) {
     // jika upstream unreachable, lempar ApiError agar route bisa handle
     if (err.response && err.response.status >= 500) {
-      throw new ApiError(502, 'Dicoding mock service error', { upstreamStatus: err.response.status });
+      throw new ApiError(502, 'Dicoding mock service error', {
+        upstreamStatus: err.response.status,
+      });
     }
     // 404 => not found (biarkan route memutuskan fallback)
-    throw err;
-  }
-}
-
-async function getTutorialContent(id) {
-  const endpoint = `/tutorials/${id}`;
-  try {
-    const r = await client.get(endpoint);
-    return r.data.data;
-  } catch (err) {
-    if (err.response && err.response.status === 404) {
-      throw new ApiError(404, `Tutorial dengan id ${id} tidak ditemukan`);
-    }
-    throw err;
-  }
-}
-
-async function getUserPreference(userId) {
-  const endpoint = `/users/${userId}/preferences`;
-  try {
-    const r = await client.get(endpoint);
-    return r.data.data;
-  } catch (err) {
-    if (err.response && err.response.status === 404) {
-      throw new ApiError(404, `User dengan id ${userId} tidak ditemukan`);
-    }
     throw err;
   }
 }

@@ -9,8 +9,10 @@ const ApiError = require('../utils/ApiError');
 
 router.get('/generate', async (req, res, next) => {
   try {
-    if (req.query.tutorial_id && typeof req.query.tutorial_id === 'string') req.query.tutorial_id = req.query.tutorial_id.trim();
-    if (req.query.user_id && typeof req.query.user_id === 'string') req.query.user_id = req.query.user_id.trim();
+    if (req.query.tutorial_id && typeof req.query.tutorial_id === 'string')
+      req.query.tutorial_id = req.query.tutorial_id.trim();
+    if (req.query.user_id && typeof req.query.user_id === 'string')
+      req.query.user_id = req.query.user_id.trim();
 
     const { error, value } = validateGenerateQuery(req.query);
     if (error) return next(new ApiError(400, error.details[0].message));

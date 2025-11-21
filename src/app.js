@@ -5,7 +5,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const generateRouter = require('./routes/generate');
-const debugRouter = require('./routes/debug');
 
 dotenv.config();
 
@@ -27,7 +26,6 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api', generateRouter);
-app.use('/api/debug', debugRouter);
 
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);

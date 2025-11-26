@@ -122,7 +122,11 @@ module.exports = {
 
     const prompt = `
 Anda adalah generator soal untuk aplikasi LearnCheck.
-Tugas: Buat 3 - 5 soal (berdasarkan tingkat kesulitan materi) multiple-choice berdasarkan ringkasan materi berikut.
+Tugas: Buat 3 - 5 soal (berdasarkan tingkat kesulitan materi) berdasarkan ringkasan materi berikut.
+
+Tipe soal yang harus dihasilkan:
+- Multiple choice (satu jawaban benar)
+- Multiple answer (lebih dari satu jawaban benar)
 
 FORMAT OUTPUT WAJIB:
 Hanya JSON array:
@@ -130,14 +134,17 @@ Hanya JSON array:
   {
     "id": "q1",
     "question": "teks",
-    "choices": ["A","B","C","D"],
+    "choices": ["A","B","C","D",dst],
+    // Untuk single answer → angka (index) dan multiple answer → array index
     "correct_index": 0,
     "hint": "teks hint"
   }
 ]
 
-Tidak boleh ada teks lain di luar JSON.
-
+-Tidak boleh ada teks lain di luar JSON.
+-correct_index bisa integer (single) atau array integer (multiple answer).
+-Minimal 1 soal multiple-answer.
+-jumlah choices 4 (untuk multiple choice) atau 4-6 (untuk multiple answer).
 Materi Ringkas:
 ${summarizedText}
     `;

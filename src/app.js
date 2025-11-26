@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const generateRouter = require('./routes/generate');
+const submitRouter = require('./routes/submit');
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api', generateRouter);
+app.use('/api', submitRouter);
 
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
@@ -36,3 +38,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`LearnCheck BackEnd running on :${PORT}`);
 });
+
+

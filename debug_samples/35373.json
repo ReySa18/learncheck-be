@@ -1,54 +1,54 @@
 {
-  "timestamp": "2025-11-21T04:48:23.534Z",
+  "timestamp": "2025-11-23T15:48:56.930Z",
   "tutorial_id": "35373",
   "questions": [
     {
       "id": "q1",
-      "question": "Apa tujuan utama dari Artificial Intelligence (AI) seperti yang dijelaskan dalam materi?",
+      "question": "Berdasarkan materi, apa tujuan utama dari Artificial Intelligence (AI)?",
       "choices": [
-        "Menganalisis data besar untuk membuat laporan",
-        "Menghasilkan konten baru secara otomatis berdasarkan input pengguna",
-        "Meniru perilaku manusia agar komputer dapat mempelajari dan menyelesaikan tugas-tugas kompleks",
-        "Membangun algoritma untuk prediksi berbasis statistik"
+        "Menggantikan semua pekerjaan manusia dengan robot.",
+        "Mengajarkan komputer untuk meniru perilaku manusia agar dapat belajar dan melakukan tugas tanpa bantuan eksplisit.",
+        "Meningkatkan kecepatan komputasi suatu sistem secara drastis.",
+        "Membuat komputer hanya dapat menyimpan data dalam jumlah yang sangat besar."
       ],
-      "correct_index": 2,
-      "hint": "Fokus pada definisi inti AI dan apa yang ingin dicapainya."
+      "correct_index": 1,
+      "hint": "Fokus pada definisi awal AI dan kemampuan yang dimilikinya untuk meniru perilaku manusia."
     },
     {
       "id": "q2",
-      "question": "Pernyataan mana yang paling tepat menggambarkan hubungan antara Artificial Intelligence (AI), Machine Learning (ML), dan Deep Learning (DL)?",
+      "question": "Manakah pernyataan berikut yang paling tepat menggambarkan hubungan hierarkis antara Artificial Intelligence (AI), Machine Learning (ML), dan Deep Learning (DL)?",
       "choices": [
         "AI adalah bagian dari ML, dan ML adalah bagian dari DL.",
         "ML adalah bagian dari AI, dan DL adalah bagian dari ML.",
-        "DL adalah bagian dari AI, dan ML adalah bagian dari DL.",
-        "AI, ML, dan DL adalah tiga teknologi yang sepenuhnya terpisah dan tidak saling berhubungan."
+        "DL adalah bagian dari AI, dan AI adalah bagian dari ML.",
+        "AI, ML, dan DL adalah teknologi yang terpisah dan tidak saling berhubungan."
       ],
       "correct_index": 1,
-      "hint": "Pikirkan mereka sebagai konsep yang berlapis atau bersarang satu sama lain."
+      "hint": "Perhatikan urutan 'bagian dari' dalam ringkasan materi, dimulai dari lingkup paling luas ke paling spesifik."
     },
     {
       "id": "q3",
-      "question": "Apa dasar utama yang digunakan Deep Learning (DL) untuk memproses masalah yang lebih kompleks, seperti yang disebutkan dalam materi?",
+      "question": "Apa kemampuan unik yang membedakan Generative AI dari bentuk Deep Learning lainnya, seperti yang dijelaskan dalam materi?",
       "choices": [
-        "Metode statistika sederhana",
-        "Analisis data besar secara langsung",
-        "Jaringan saraf tiruan",
-        "Input pengguna secara manual"
+        "Kemampuan untuk mengidentifikasi pola dalam data yang sangat besar dengan cepat.",
+        "Kemampuan untuk membuat keputusan secara otonom berdasarkan pengalaman yang terbatas.",
+        "Kemampuan untuk menghasilkan berbagai konten baru seperti bahasa, kode, suara, dan gambar.",
+        "Kemampuan untuk belajar dan berkembang secara otomatis menggunakan metode statistika sederhana."
       ],
       "correct_index": 2,
-      "hint": "Deep Learning memiliki struktur khusus yang terinspirasi dari biologi."
+      "hint": "Cari kata kunci 'menghasilkan konten baru' dalam deskripsi Generative AI."
     },
     {
       "id": "q4",
-      "question": "Kemampuan spesifik apakah yang dimiliki oleh Generative AI?",
+      "question": "Apa yang menjadi dasar utama bagi Deep Learning (DL) seperti yang dijelaskan dalam materi ringkas?",
       "choices": [
-        "Hanya menganalisis data yang sudah ada untuk menemukan pola tersembunyi.",
-        "Memungkinkan komputer belajar dan berkembang secara otomatis dari pengalaman.",
-        "Menghasilkan berbagai konten baru, seperti bahasa, kode, suara, atau gambar.",
-        "Memproses masalah yang sangat kompleks melalui input, hidden layer, dan output saja."
+        "Algoritma pembelajaran statistik tradisional.",
+        "Jaringan saraf tiruan (artificial neural networks).",
+        "Komputasi berbasis komputasi kuantum.",
+        "Sistem aturan logis yang telah diprogram secara eksplisit."
       ],
-      "correct_index": 2,
-      "hint": "Kata 'Generative' mengacu pada tindakan menciptakan atau menghasilkan."
+      "correct_index": 1,
+      "hint": "Perhatikan frasa kunci yang menjelaskan fondasi Deep Learning yang membedakannya dari ML secara umum."
     }
   ]
 }

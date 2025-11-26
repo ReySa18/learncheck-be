@@ -180,4 +180,5 @@ ${summarizedText}
       throw new ApiError(502, 'Gagal menghasilkan soal dari LLM: ' + err.message);
     }
   },
+  callLLM
 };

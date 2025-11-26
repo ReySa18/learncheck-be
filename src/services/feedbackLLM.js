@@ -4,17 +4,21 @@ const llmClient = require("./llmClient");
 module.exports = {
   async generateFeedback(questions) {
     const prompt = `
-Anda adalah asisten edukasi yang membuat feedback dari jawaban soal pilihan ganda.
-
+Anda adalah asisten edukasi yang membuat feedback dari jawaban soal pilihan ganda dan pilihan ganda lebih dari satu jawaban (multiple answer).
 Berikan penjelasan yang jelas, akurat, dan mudah dipahami untuk setiap soal.
 
 Berikut data soal dan jawaban user dalam format JSON:
 ${JSON.stringify(questions, null, 2)}
 
 Tugas Anda:
-1. Tentukan apakah jawaban user benar atau salah.
-2. Berikan penjelasan singkat namun padat.
-3. Jangan melakukan spekulasi — gunakan data dari input.
+1. Jika "correct_answer" atau "user_answer" berupa array, anggap soal tersebut adalah multiple answer.
+2. Tentukan apakah jawaban user benar atau salah.
+3. Jawaban benar jika SET kedua array sama (urutan tidak penting).
+4. Jika salah satu jawaban tidak sesuai, kategorikan sebagai salah.
+5. Berikan penjelasan singkat namun akurat.
+6. Jangan menambah informasi yang tidak ada di input.
+7. Untuk setiap "explanation", berikan penjelasan dalam format HTML
+8. gunakan tag <p>, <b>, <i>, <ul>, <ol>, <li>, <br>.
 
 Berikan output dalam format JSON berikut:
 

@@ -10,8 +10,15 @@ exports.validateSubmitPayload = (body) => {
           id: Joi.string().required(),
           question_text: Joi.string().required(),
           options: Joi.array().items(Joi.string()).min(2).required(),
-          correct_answer: Joi.string().required(),
-          user_answer: Joi.string().allow(null).required()
+          correct_answer: Joi.alternatives().try(
+            Joi.string(),
+            Joi.array().items(Joi.string())
+          ).required(),
+          user_answer: Joi.alternatives().try(
+            Joi.string(),
+            Joi.array().items(Joi.string()),
+            Joi.valid(null)
+          ).required()
         })
       )
       .min(1)

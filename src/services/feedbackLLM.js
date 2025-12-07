@@ -1,24 +1,26 @@
 const ApiError = require("../utils/ApiError");
 const llmClient = require("./llmClient");
+const { startTimer, endTimer } = require('../utils/timeLogger');
 
 module.exports = {
   async generateFeedback(questions) {
     const prompt = `
-Anda adalah asisten edukasi yang membuat feedback dari jawaban soal pilihan ganda dan pilihan ganda lebih dari satu jawaban (multiple answer).
-Berikan penjelasan yang jelas, akurat, dan mudah dipahami untuk setiap soal.
+You are an educational assistant who generates feedback for multiple-choice and multiple-answer questions.
+Provide clear, accurate, and easy-to-understand explanations for each question.
 
-Berikut data soal dan jawaban user dalam format JSON:
+Below is the question data and the user's answers in JSON format:
 ${JSON.stringify(questions, null, 2)}
 
-Tugas Anda:
-1. Jika "correct_answer" atau "user_answer" berupa array, anggap soal tersebut adalah multiple answer.
-2. Tentukan apakah jawaban user benar atau salah.
-3. Jawaban benar jika SET kedua array sama (urutan tidak penting).
-4. Jika salah satu jawaban tidak sesuai, kategorikan sebagai salah.
-5. Berikan penjelasan singkat namun akurat.
-6. Jangan menambah informasi yang tidak ada di input.
-7. Untuk setiap "explanation", berikan penjelasan dalam format HTML
-8. gunakan tag <p>, <b>, <i>, <ul>, <ol>, <li>, <br>.
+Your tasks:
+1. If "correct_answer" or "user_answer" is an array, consider the question as a multiple-answer type.
+2. Determine whether the user's answer is correct or incorrect.
+3. For multiple-answer questions, the answer is correct if both sets match exactly (order does not matter).
+4. If any selected answer is incorrect or any required answer is missing, mark it as incorrect.
+5. Provide short but accurate explanations.
+6. Do not add information that is not present in the input.
+7. For each "explanation", write the explanation in HTML format.
+8. Use only the tags: <p>, <b>, <i>, <ul>, <ol>, <li>, <br>.
+9. The explanation must use the same language as the content provided in the JSON above.
 
 Berikan output dalam format JSON berikut:
 
@@ -27,15 +29,19 @@ Berikan output dalam format JSON berikut:
     {
       "id": number,
       "is_correct": boolean,
-      "explanation": "penjelasan..."
+      "explanation": "explanation..."
     }
   ]
 }
     `;
 
-    // Call LLM
-    let raw = await llmClient.callLLM(prompt);
+    const timer = startTimer("Generate Feedback");
 
+    // Call LLM
+    let raw = await llmClient.callLLM(prompt, "LLM Generate Feedback");
+
+    endTimer(timer);
+    
     // Bersihkan JSON dari markdown
     let clean = raw
       .replace(/```json/gi, "")

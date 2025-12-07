@@ -6,6 +6,7 @@ const ApiError = require('../utils/ApiError');
 
 const cache = new Map();
 const CACHE_TTL = parseInt(process.env.CACHE_TTL || '600', 10);
+const { startTimer, endTimer } = require('../utils/timeLogger');
 
 const llmClient = axios.create({
   timeout: 30000, // 30 detik timeout
@@ -48,49 +49,63 @@ function chunkText(text, size = 12000) {
 }
 
 // LLM INTEGRATION
-async function callLLM(prompt) {
-  // Gunakan header x-goog-api-key untuk auth
+async function callLLM(prompt, label = "LLM Request") {
   const url = `${process.env.LLM_URL}/${process.env.LLM_MODEL}:generateContent`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
   };
 
-  const response = await llmClient.post(url, body, {
-    headers: {
-      'x-goog-api-key': process.env.LLM_API_KEY,
-    },
-  });
+  // Start timer dengan label khusus
+  const timer = startTimer(`${label} (${(prompt || '').slice(0, 40)}...)`);
 
-  const output = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return output;
+  try {
+    const response = await llmClient.post(url, body, {
+      headers: {
+        'x-goog-api-key': process.env.LLM_API_KEY,
+      },
+    });
+
+    endTimer(timer);
+
+    const output =
+      response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    return output;
+  } catch (err) {
+    endTimer(timer);
+    throw err;
+  }
 }
+
+
 // SUMMARIZATION
 async function summarizeLongText(rawText) {
   const chunks = chunkText(rawText);
   const summaries = [];
 
-  for (const chunk of chunks) {
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
     const prompt = `
-Anda adalah asisten akademik. Tugas Anda: merangkum materi berikut menjadi poin-poin penting.
+You are an academic assistant. Your task: summarize the following material into key points.
 
-PERSYARATAN OUTPUT:
-- Minimal 5 poin.
-- Setiap poin maksimal 1 kalimat.
-- Tidak boleh mencampur instruksi, hanya merangkum materi.
-- Format output: bullet list:
-- Poin 1
-- Poin 2
-- Poin 3
-- Poin 4
-- Poin 5
+OUTPUT REQUIREMENTS:
+- At least 5 points.
+- Each point max 1 sentence.
+- Do not mix instructions; only summarize the material.
+- Summary output must use the same language as the material.
+- Output format: bullet list:
+- Point 1
+- Point 2
+- Point 3
+- etc.
 
-Materi:
+Material:
 ${chunk}
     `;
 
     try {
-      const summary = await callLLM(prompt);
+      const summary = await callLLM(prompt, `LLM Summarize Chunk ${i + 1}/${chunks.length}`);
       const clean = summary.trim();
 
       console.log('CHUNK SUMMARY LEN:', clean.length);
@@ -121,36 +136,38 @@ module.exports = {
     const summarizedText = await summarizeLongText(rawText);
 
     const prompt = `
-Anda adalah generator soal untuk aplikasi LearnCheck.
-Tugas: Buat 3 - 5 soal (berdasarkan tingkat kesulitan materi) berdasarkan ringkasan materi berikut.
+You are a question generator for the LearnCheck application.
+Task: Create 3–5 questions (based on the difficulty of the material) using the following summarized material.
 
-Tipe soal yang harus dihasilkan:
-- Multiple choice (satu jawaban benar)
-- Multiple answer (lebih dari satu jawaban benar)
+Required question types:
+- Multiple choice (one correct answer)
+- Multiple answer (more than one correct answer)
 
-FORMAT OUTPUT WAJIB:
-Hanya JSON array:
+MANDATORY OUTPUT FORMAT:
+JSON array only:
 [
   {
     "id": "q1",
-    "question": "teks",
-    "choices": ["A","B","C","D",dst],
-    // Untuk single answer → angka (index) dan multiple answer → array index
+    "question": "text",
+    "choices": ["A","B","C","D",etc],
+    // For single answer → integer (index), for multiple answer → array of indexes
     "correct_index": 0,
-    "hint": "teks hint"
+    "hint": "hint text"
   }
 ]
 
--Tidak boleh ada teks lain di luar JSON.
--correct_index bisa integer (single) atau array integer (multiple answer).
--Minimal 1 soal multiple-answer.
--jumlah choices 4 (untuk multiple choice) atau 4-6 (untuk multiple answer).
-Materi Ringkas:
+-No text allowed outside the JSON.
+- Question must use the same language as the material.
+-"correct_index" may be an integer (single) or an array of integers (multiple answer).
+-At least 1 multiple-answer question.
+-Number of choices: 4 for multiple choice, or 4–6 for multiple answer.
+
+Summarized Material:
 ${summarizedText}
     `;
 
     try {
-      let raw = await callLLM(prompt);
+      let raw = await callLLM(prompt, "LLM Generate Questions");
 
       // Parse dan bersihkan output LLM
       let clean = raw

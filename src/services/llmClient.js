@@ -49,34 +49,82 @@ function chunkText(text, size = 12000) {
 }
 
 // LLM INTEGRATION
-async function callLLM(prompt, label = "LLM Request") {
-  const url = `${process.env.LLM_URL}/${process.env.LLM_MODEL}:generateContent`;
+async function callModel(model, apiKey, prompt) {
+  const url = `${process.env.LLM_URL}/${model}:generateContent`;
+  console.log(`\n[LLM] → Calling model: ${model}`);
+  const start = Date.now();
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
   };
 
-  // Start timer dengan label khusus
-  const timer = startTimer(`${label} (${(prompt || '').slice(0, 40)}...)`);
-
   try {
     const response = await llmClient.post(url, body, {
-      headers: {
-        'x-goog-api-key': process.env.LLM_API_KEY,
-      },
+      headers: { 'x-goog-api-key': apiKey },
     });
 
-    endTimer(timer);
+    const duration = Date.now() - start;
+    console.log(`[LLM] ✓ Model success: ${model} (${duration} ms)`);
 
-    const output =
-      response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    return output;
+    return response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
   } catch (err) {
-    endTimer(timer);
+    const duration = Date.now() - start;
+    const status = err?.response?.status;
+
+    console.warn(
+      `[LLM] ✗ Model failed: ${model} | Status: ${status || 'network error'} | Time: ${duration} ms`
+    );
+
     throw err;
   }
 }
+
+
+async function callLLM(prompt) {
+  const primaryModel = process.env.LLM_MODEL_PRIMARY || process.env.LLM_MODEL;
+  const primaryKey = process.env.LLM_API_KEY_PRIMARY || process.env.LLM_API_KEY;
+
+  const secondaryModel = process.env.LLM_MODEL_SECONDARY;
+  const secondaryKey = process.env.LLM_API_KEY_SECONDARY;
+
+  console.log(`\n[LLM] === Starting LLM Request ===`);
+  console.log(`[LLM] Primary model: ${primaryModel}`);
+  if (secondaryModel) console.log(`[LLM] Fallback model: ${secondaryModel}`);
+
+  try {
+    // Coba model utama
+    const result = await callModel(primaryModel, primaryKey, prompt);
+    console.log(`[LLM] → Request completed using PRIMARY model.\n`);
+    return result;
+
+  } catch (err) {
+    const status = err?.response?.status;
+    const retriable = !status || [403, 429, 500, 502, 503, 504].includes(status);
+
+    console.warn(`[LLM] Primary model failed (status: ${status}).`);
+
+    if (!retriable || !secondaryModel || !secondaryKey) {
+      console.warn(`[LLM] No fallback executed.\n`);
+      throw err;
+    }
+
+    console.warn(`[LLM] → Switching to fallback model: ${secondaryModel}`);
+
+    try {
+      const result = await callModel(secondaryModel, secondaryKey, prompt);
+      console.log(`[LLM] → Request completed using FALLBACK model.\n`);
+      return result;
+
+    } catch (fallbackErr) {
+      console.error(`[LLM] Fallback model ALSO failed. Aborting request.\n`);
+      throw new ApiError(
+        502,
+        'Semua model LLM gagal merespons. Silakan coba beberapa saat lagi.'
+      );
+    }
+  }
+}
+
 
 
 // SUMMARIZATION
